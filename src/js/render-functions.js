@@ -7,7 +7,52 @@ export const refs = {
   formEl: document.querySelector('.js-form'),
   loaderEl: document.querySelector('.loader'),
   galleryEl: document.querySelector('.gallery'),
+  loadMoreEl: document.querySelector('.load-more-btn'),
 };
+
+export const collectInfo = {
+  page: 1,
+  query: '',
+  totalHits: null,
+  limit: 15,
+
+  getPage() {
+    return this.page;
+  },
+
+  setNewPage() {
+    this.page += 1;
+  },
+
+  getHits() {
+    return this.totalHits;
+  },
+
+  getQuery() {
+    return this.query;
+  },
+
+  setNewQuery(newQuery, newPage, newHits) {
+    this.query = newQuery;
+    this.page = newPage;
+    this.totalHits = newHits;
+  },
+
+  checkPages() {
+    return Math.ceil(this.totalHits / this.limit);
+  },
+
+  reset() {
+    this.query = '';
+    this.page = 1;
+    this.totalHits = null;
+    this.loadings = null;
+  },
+};
+
+export function countPages(page) {
+  return ++page;
+}
 
 export const lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
@@ -103,4 +148,12 @@ export function showLoader() {
 
 export function hideLoader() {
   refs.loaderEl.style.display = 'none';
+}
+
+export function showLoadMoreButton() {
+  refs.loadMoreEl.classList.add('show');
+}
+
+export function hideLoadMoreButton() {
+  refs.loadMoreEl.classList.remove('show');
 }

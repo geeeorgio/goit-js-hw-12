@@ -8,14 +8,21 @@ axios.defaults.params = {
   image_type: 'photo',
   orientation: 'horizontal',
   safesearch: 'true',
+  per_page: 15,
 };
 
-export function getImagesByQuery(query) {
-  return axios.get('', { params: { q: query } }).then(response => {
-    const hits = response.data.hits;
-    if (hits.length === 0) {
-      throw new Error();
-    }
-    return hits;
-  });
+export async function getImagesByQuery(query, pg) {
+  try {
+    const response = await axios.get('', {
+      params: {
+        ...axios.defaults.params,
+        q: query,
+        page: pg ? pg : 1,
+      },
+    });
+
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
 }

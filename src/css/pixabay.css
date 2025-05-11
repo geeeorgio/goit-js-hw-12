@@ -99,14 +99,19 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
 
-.simplelightbox-img-wrapper {}
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background-color: #fff;
+
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
 
 .response-img {
     width: 100%;
     height: 200px;
     object-fit: cover;
+    overflow: hidden;
 }
 
 .response-item-des-list {
@@ -126,4 +131,26 @@
     font-weight: 400;
     font-size: 12px;
     line-height: 2;
+}
+
+.load-more-btn {
+    display: none;
+
+    &.show {
+        display: block;
+        margin: 10px auto;
+
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        background: #4e75ff;
+        transition: background 222ms ease-in-out;
+
+        font-weight: 500;
+        color: #fff;
+
+        &:hover {
+            background: #6c8cff;
+        }
+    }
 }
