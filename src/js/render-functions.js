@@ -10,6 +10,8 @@ export const refs = {
   loadMoreEl: document.querySelector('.load-more-btn'),
 };
 
+// === pagination ===
+
 export const collectInfo = {
   page: 1,
   query: '',
@@ -24,10 +26,6 @@ export const collectInfo = {
     this.page += 1;
   },
 
-  getHits() {
-    return this.totalHits;
-  },
-
   getQuery() {
     return this.query;
   },
@@ -38,63 +36,67 @@ export const collectInfo = {
     this.totalHits = newHits;
   },
 
-  checkPages() {
-    return Math.ceil(this.totalHits / this.limit);
+  hitsLeft() {
+    return this.totalHits - this.page * this.limit;
   },
 
   reset() {
     this.query = '';
     this.page = 1;
     this.totalHits = null;
-    this.loadings = null;
   },
 };
 
-export function countPages(page) {
-  return ++page;
-}
+// === lightbox ===
 
 export const lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
   captionsData: 'title',
 });
 
-export function showSuccessMsg() {
+// === notifications ===
+
+export function showSuccessMsg(amount = 1) {
   iziToast.success({
+    timeout: 3333,
     title: 'Nice!',
-    message: 'Searching for pictures',
+    message: `You found ${amount} images`,
     position: 'topRight',
   });
 }
 
-export function showWarningMsg() {
+export function showWarningMsg(warn = '') {
   iziToast.warning({
+    timeout: 3333,
     title: 'Caution!',
-    message: 'Looks like you forgot to type something',
+    message: `${warn}`,
     position: 'topRight',
   });
 }
 
-export function showErrorMsg(err) {
+export function showErrorMsg(err = '') {
   iziToast.error({
-    title: `${err}!`,
-    message:
-      'Sorry, there are no images matching your search query. Please try again!',
+    timeout: 3333,
+    title: 'Oups!',
+    message: `${err}`,
     position: 'topRight',
-    maxWidth: 500,
+    maxWidth: 450,
   });
 }
+
+// === gallery ===
 
 export function renderGallery(images) {
+  if (!images || images.length === 0) return;
   refs.galleryEl.insertAdjacentHTML('beforeend', createGallery(images));
   lightbox.refresh();
 }
 
-function createGallery(images) {
+function createGallery(images = []) {
   return images.map(renderGalleryItem).join('');
 }
 
-function renderGalleryItem(item) {
+function renderGalleryItem(item = {}) {
   const {
     largeImageURL,
     webformatURL,
@@ -142,6 +144,8 @@ export function clearGallery() {
   refs.galleryEl.innerHTML = '';
 }
 
+// === loaders ===
+
 export function showLoader() {
   refs.loaderEl.style.display = 'flex';
 }
@@ -156,4 +160,21 @@ export function showLoadMoreButton() {
 
 export function hideLoadMoreButton() {
   refs.loadMoreEl.classList.remove('show');
+}
+
+// === rect/scroll ===
+
+export function getRect(obj = {}) {
+  return obj.getBoundingClientRect();
+}
+
+export function getItemHeight(obj = {}) {
+  return obj.height;
+}
+
+export function scrollItem(height = 1) {
+  window.scrollBy({
+    top: height * 2,
+    behavior: 'smooth',
+  });
 }

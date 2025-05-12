@@ -4,68 +4,89 @@ import { getImagesByQuery } from './js/pixabay-api';
 functions.refs.formEl.addEventListener('submit', handleFormSubmit);
 functions.refs.loadMoreEl.addEventListener('click', handleLoadMoreClick);
 
-function handleFormSubmit(e) {
-  e.preventDefault();
-  functions.clearGallery();
-  functions.showLoader();
-  functions.collectInfo.reset();
+async function handleFormSubmit(e) {
+  try {
+    e.preventDefault();
+    functions.clearGallery();
+    functions.hideLoadMoreButton();
+    functions.showLoader();
+    functions.collectInfo.reset();
 
-  const inputData = functions.refs.formEl.elements['search-text'].value.trim();
-  if (!inputData || inputData === '') {
-    functions.showWarningMsg();
-    functions.hideLoader();
-    return;
-  }
-
-  getImagesByQuery(inputData)
-    .then(response => {
-      const {
-        data: { hits, totalHits },
-        config: {
-          params: { page },
-        },
-      } = response;
-
-      if (hits.length === 0) {
-        throw new Error('Oups');
-      }
-
-      functions.renderGallery(hits);
-      functions.showLoadMoreButton();
-      functions.collectInfo.setNewQuery(inputData, page, totalHits);
-    })
-    .catch(error => {
-      functions.showErrorMsg(error);
-    })
-    .finally(() => {
+    const inputData =
+      functions.refs.formEl.elements['search-text'].value.trim();
+    if (!inputData || inputData === '') {
+      functions.showWarningMsg('Looks like you forgot to type something');
       functions.hideLoader();
-    });
+      return;
+    }
+
+    const {
+      data: { hits, totalHits },
+      config: {
+        params: { page },
+      },
+    } = await getImagesByQuery(inputData);
+
+    if (hits.length === 0) {
+      functions.showErrorMsg(
+        'There are no images matching your search query. Please try again!'
+      );
+      return;
+    }
+
+    functions.collectInfo.setNewQuery(inputData, page, totalHits);
+    functions.renderGallery(hits);
+    functions.showSuccessMsg(totalHits);
+
+    if (hits.length < functions.collectInfo.limit) {
+      functions.showWarningMsg(`These are all results found.`);
+      return;
+    }
+
+    functions.showLoadMoreButton();
+  } catch (err) {
+    functions.showErrorMsg(err);
+  } finally {
+    functions.hideLoader();
+  }
 
   functions.refs.formEl.reset();
 }
 
-function handleLoadMoreClick() {
-  const totalPages = functions.collectInfo.checkPages();
-  const page = functions.collectInfo.getPage();
-  if (totalPages < page) {
-    functions.hideLoadMoreButton();
-    throw new Error(
-      `We're sorry, but you've reached the end of search results.`
-    );
-  }
-  const query = functions.collectInfo.getQuery();
-  const newPage = functions.collectInfo.setNewPage();
+async function handleLoadMoreClick() {
+  try {
+    functions.showLoader();
 
-  getImagesByQuery(query, newPage)
-    .then(response => {
-      console.log(response);
-      functions.renderGallery(response.data.hits);
-      functions.showLoadMoreButton();
-    })
-    .catch(error => {
-      functions.showErrorMsg(error);
-    })
-    .finally(() => {
-      functions.hideLoader();
-    });
+    if (functions.collectInfo.hitsLeft() <= 0) {
+      functions.hideLoadMoreButton();
+      functions.showWarningMsg(`No more images to load.`);
+      return;
+    }
+
+    const query = functions.collectInfo.getQuery();
+    functions.collectInfo.setNewPage();
+    const newPage = functions.collectInfo.getPage();
+
+    const {
+      data: { hits },
+    } = await getImagesByQuery(query, newPage);
+
+    functions.renderGallery(hits);
+
+    const listItem = document.querySelector('.gallery .response-list-item ');
+    const listItemParams = functions.getRect(listItem);
+    const itemHeight = functions.getItemHeight(listItemParams);
+    functions.scrollItem(itemHeight);
+
+    if (hits.length < functions.collectInfo.limit) {
+      functions.hideLoadMoreButton();
+      functions.showErrorMsg(
+        `We're sorry, but you've reached the end of search results.`
+      );
+    }
+  } catch (err) {
+    functions.showErrorMsg(err);
+  } finally {
+    functions.hideLoader();
+  }
 }
